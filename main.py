@@ -313,6 +313,36 @@ def get_crystal_rect():
         hitboxH
     )
 
+# Get Next Pipe
+def get_next_pipe():
+    for pipe in pipes:
+        if pipe["x"] + pipeWidth > playerPos.x:
+            return pipe
+    return pipes[0]
+
+# Get Game State
+def get_state():
+    pipe = get_next_pipe()
+
+    pipe_distance = pipe["x"] - playerPos.x
+    gap_center = pipe["gapY"]
+
+    return [
+        playerPos.y / screen.get_height(),
+        playerVelocity / 1000,
+        pipe_distance / screen.get_width(),
+        gap_center / screen.get_height()
+    ]
+
+# AI Decision
+def ai_decide(state):
+    player_y, velocity, pipe_distance, gap_center = state
+
+    if player_y > gap_center:
+        return 1
+    return 0
+
+
 # Game Loop
 while running:
     
@@ -322,8 +352,8 @@ while running:
 
         # Jump Mechanic
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and gameState == "playing":
-                playerVelocity = jumpStrength
+            # if event.key == pygame.K_SPACE and gameState == "playing":
+            #     playerVelocity = jumpStrength
 
             # Start Game
             if event.key == pygame.K_SPACE and gameState == "start":
@@ -336,6 +366,13 @@ while running:
 
     if gameState == "playing":
 
+        state = get_state()
+        action = ai_decide(state)
+
+        if action == 1:
+            playerVelocity = jumpStrength
+        
+        
         # Crystal Physics
         playerVelocity += gravity * dt
         playerPos.y += playerVelocity * dt
